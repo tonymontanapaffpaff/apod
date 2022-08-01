@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: docker/db.dockerfile
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - ${DB_PORT}:5432
+    restart: always
+    networks:
+      - pictures-network
+  pictures_receiver:
+    build:
+      context: .
+      dockerfile: docker/pictures_receiver.dockerfile
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_NAME=${DB_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SSL_MODE=${SSL_MODE}
+    ports:
+      - ${SERVER_ENDPOINT}:9090
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - pictures-network
+
+networks:
+  pictures-network:
+    name: pictures-network
